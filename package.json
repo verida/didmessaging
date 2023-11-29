@@ -15,13 +15,13 @@
  "devDependencies": {
   "@types/commander": "^2.12.2",
   "@types/prompt-sync": "^4.2.0",
-  "@verida/types": "^2.3.1",
+  "@verida/types": "next",
   "ts-node": "^10.9.1",
   "typescript": "^5.1.6"
  },
  "dependencies": {
-  "@verida/account-node": "^2.3.9",
-  "@verida/client-ts": "^2.3.9",
+  "@verida/account-node": "next",
+  "@verida/client-ts": "next",
   "commander": "^11.0.0",
   "dotenv": "^16.3.1",
   "ethers": "5.7.2",
