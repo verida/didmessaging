@@ -61,7 +61,7 @@ export default class DIDMessagingApp {
     await client.connect(this.veridaAccount);
 
 
-    this.veridaContext = await client.openContext("Verida Official Messages", true) as Context;
+    this.veridaContext = await client.openContext(process.env.APP_TITLE, true) as Context;
 
   }
   
@@ -85,7 +85,7 @@ export default class DIDMessagingApp {
       const messaging = await this.veridaContext.getMessaging();
   
       // set the subject
-      const subject = "Message from Nick!"
+      const subject = `Message from Nick at ${new Date().toISOString()}`
       // we need to set it to the correct message type
       const messageType = "inbox/type/message"
   
