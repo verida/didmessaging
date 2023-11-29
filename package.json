@@ -9,7 +9,8 @@
  },
  "scripts": {
   "start": "ts-node ./src/index.ts",
-  "send_message": "ts-node ./src/index.ts -s"
+  "send_message": "ts-node ./src/index.ts -s",
+  "send_message_list": "ts-node ./src/index.ts --send --didfile ./example_config/didlist.txt"
  },
  "devDependencies": {
   "@types/commander": "^2.12.2",
@@ -23,7 +24,10 @@
   "@verida/client-ts": "^2.3.9",
   "commander": "^11.0.0",
   "dotenv": "^16.3.1",
-  "ethers": "^6.7.1",
+  "ethers": "5.7.2",
   "prompt-sync": "^4.2.0"
+ },
+ "resolutions": {
+  "leveldown": "^6.0.0"
  }
 }
