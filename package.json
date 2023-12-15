@@ -9,8 +9,9 @@
  },
  "scripts": {
   "start": "ts-node ./src/index.ts",
+  "list_dids": "ts-node ./src/index.ts --listdids",
   "send_message": "ts-node ./src/index.ts -s",
-  "send_message_list": "ts-node ./src/index.ts --send --didfile ./example_config/didlist.txt"
+  "send_message_list": "ts-node ./src/index.ts --send --didfile ./example_config/didlist.txt --messagefile ./example_config/message.json"
  },
  "devDependencies": {
   "@types/commander": "^2.12.2",
@@ -20,12 +21,15 @@
   "typescript": "^5.1.6"
  },
  "dependencies": {
-  "@verida/account-node": "next",
-  "@verida/client-ts": "next",
+  "@verida/account-node": "^2.4.0-rc2",
+  "@verida/client-ts": "^2.4.0-rc2",
+  "@verida/vda-did-resolver": "^2.3.9",
   "commander": "^11.0.0",
+  "csv-writer": "^1.6.0",
   "dotenv": "^16.3.1",
   "ethers": "5.7.2",
-  "prompt-sync": "^4.2.0"
+  "prompt-sync": "^4.2.0",
+  "wtfnode": "^0.9.1"
  },
  "resolutions": {
   "leveldown": "^6.0.0"
