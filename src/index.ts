@@ -4,8 +4,6 @@ import {DIDDocument} from '@verida/did-document'
 import { EnvironmentType, IMessaging, IProfile } from '@verida/types';
 import { AutoAccount } from '@verida/account-node';
 import { getDIDs } from "@verida/vda-did-resolver";
-import { Wallet } from 'ethers';
-import PromptSync  from 'prompt-sync';
 import { Command, Option } from 'commander';
 import 'dotenv/config'
 import * as fs from 'fs';
@@ -182,7 +180,44 @@ export default class DIDMessagingApp {
         }
     
         console.log(`Sending message ${i + 1}/${dids.length} to ${dids[i]}`);
-        await messaging.send(dids[i], messageType, data, messageDetails['subject'], config);
+        try {
+          await messaging.send(dids[i], messageType, data, messageDetails['subject'], config);
+        } catch (err) {
+          if (err instanceof Error) {
+            // This DID doesn't have an inbox
+            const pattern = /Database \(inbox_item \/ .*\) not found on https:.*/;
+
+            const match = err.message.match(pattern);
+            if (match) {
+              console.log(`DID did not have an inbox`)
+            } else {
+              // Expired refresh token
+              const pattern = /Expired refresh token/;
+              const match = err.message.match(pattern);
+              if (match) {
+                console.log(`Expired refresh token`)
+              } else {
+                const pattern = /.*Recipient does not have an inbox for that context \(Verida: Vault\)/;
+                const match = err.message.match(pattern);
+                if (match) {
+                  console.log(`Expired refresh token`)
+                } else {
+                  const pattern = /No endpoints specified/;
+                  const match = err.message.match(pattern);
+                  if (match) {
+                    console.log(`Expired refresh token`)
+                  } else {
+                    throw err;
+                  }
+                }
+              }
+            }
+          } else {
+            // not an Error being thrown
+            throw err;
+          }
+        }
+        
       }
   
       console.log("Messages sent.")
