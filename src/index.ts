@@ -48,9 +48,9 @@ export default class DIDMessagingApp {
 
     const dids = []
 
-    const startFrom = 6000
+    const startFrom = 0
     const pageSize = 20
-    const maxNumberDids = 6000
+    const maxNumberDids = 1000
 
     let getMoreDids = true
     let pageStart = startFrom
@@ -81,9 +81,6 @@ export default class DIDMessagingApp {
       }
     }
 
-    console.log(dids)
-
-    //const validDids: string[] = []
     const outputObjects: Array<{did: string, resolved: boolean, has_mission_context: boolean}> = []
 
     const promisesPageSize: number = 10;
@@ -106,11 +103,9 @@ export default class DIDMessagingApp {
       await Promise.allSettled(promises).then((results) =>
         results.forEach((result) => {
           if (result.status == "fulfilled") {
-            //validDids.push((result.value as any).did)
             let didDoc = result.value 
             let proof = didDoc.locateContextProof(CONTEXT_NAME)
             if (proof) {
-              //validDids.push(didDoc.id)
 
               outputObjects.push({did: didDoc.id, resolved: true, has_mission_context: true})
             } else {
@@ -127,13 +122,10 @@ export default class DIDMessagingApp {
             } else {
               console.log(result.reason)
             }
-          
           }
         }),
       );
     }
-
-    //fs.writeFileSync('./didlist.txt', validDids.join('\n'), "utf8");
 
     const csvFilePath = `dids-${startFrom}-to-${endIndex}.csv`;
     const csvWriter = createObjectCsvWriter({
@@ -172,60 +164,82 @@ export default class DIDMessagingApp {
 
       const dids = didlist.split(/\n/)
 
-      for (let i = 0; i < dids.length; i++) {
-        const config = {
-          recipientContextName: VAULT_CONTEXT_NAME,
-          
-          did: dids[i]
-        }
-    
-        console.log(`Sending message ${i + 1}/${dids.length} to ${dids[i]}`);
-        try {
-          await messaging.send(dids[i], messageType, data, messageDetails['subject'], config);
-        } catch (err) {
-          if (err instanceof Error) {
-            // This DID doesn't have an inbox
-            const pattern = /Database \(inbox_item \/ .*\) not found on https:.*/;
+      const errorLogFilePath = `message_send_errors_${Date.now()}.csv`;
+      const csvWriter = createObjectCsvWriter({
+        path: errorLogFilePath,
+        append: true,
+        header: [
+          { id: 'did', title: 'DID' },
+          { id: 'errorMessage', title: 'Error_Message' },
+        ],
+      });
 
-            const match = err.message.match(pattern);
-            if (match) {
-              console.log(`DID did not have an inbox`)
-            } else {
-              // Expired refresh token
-              const pattern = /Expired refresh token/;
-              const match = err.message.match(pattern);
-              if (match) {
-                console.log(`Expired refresh token`)
-              } else {
-                const pattern = /.*Recipient does not have an inbox for that context \(Verida: Vault\)/;
-                const match = err.message.match(pattern);
+      let numAttemptedSends = 0
+      let numSuccessfulSends = 0
+      let numFailuredSends = 0;
+
+      try {
+
+        for (let i = 0; i < dids.length; i++) {
+          numAttemptedSends++;
+          const config = {
+            recipientContextName: VAULT_CONTEXT_NAME,
+            did: dids[i]
+          };
+      
+          console.log(`Sending message ${i + 1}/${dids.length} to ${dids[i]}`);
+          try {
+            await messaging.send(dids[i], messageType, data, messageDetails['subject'], config);
+            numSuccessfulSends++;
+          } catch (err) {
+            numFailuredSends++;
+            if (err instanceof Error) {
+  
+              // There are a set of known errors that we should just log and continue for
+              const knownErrorMessageRegExs = [
+                /Database \(inbox_item \/ .*\) not found on https:.*/,
+                /Expired refresh token/,
+                /.*Recipient does not have an inbox for that context \(Verida: Vault\)/,
+                /No endpoints specified/
+              ]
+  
+              let errorHandled = false;
+              for (const regEx of knownErrorMessageRegExs) {
+                const match = err.message.match(regEx);
                 if (match) {
-                  console.log(`Expired refresh token`)
-                } else {
-                  const pattern = /No endpoints specified/;
-                  const match = err.message.match(pattern);
-                  if (match) {
-                    console.log(`Expired refresh token`)
-                  } else {
-                    throw err;
+
+                  const error: {did: string, errorMessage: string} = {
+                    did: dids[i],
+                    errorMessage: err.message
                   }
+
+                  await csvWriter.writeRecords([error])
+
+                  errorHandled = true;
+                  break
                 }
               }
+  
+              if (!errorHandled) {
+                // this is an error we don't know
+                throw err
+              }
+  
+            } else {
+              // not an Error being thrown
+              throw err;
             }
-          } else {
-            // not an Error being thrown
-            throw err;
           }
         }
-        
-      }
+      } finally {
+        console.log(`${numAttemptedSends} message sends attempts, of which ${numSuccessfulSends} were successful and ${numFailuredSends} failed.`)
+    
+        console.log(`Errors saved to ${errorLogFilePath}`)
   
+      }
       console.log("Messages sent.")
       console.log("Closing context...")
       await this.veridaContext.close();
-
-      //await this.veridaContext.disconnect();
-  
     }
     return;
   }

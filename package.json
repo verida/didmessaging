@@ -12,8 +12,8 @@
   "list_dids": "ts-node ./src/index.ts --listdids",
   "test_expired_refresh_token": "ts-node ./src/index.ts --send --didfile ./example_config/expired_refresh_token_did.txt --messagefile ./example_config/message1.json",
   "send_message_list": "ts-node ./src/index.ts --send --didfile ./example_config/didlist.txt --messagefile ./example_config/message1.json",
-  "send_message_blast1": "ts-node ./src/index.ts --send --didfile ./example_config/didlist_to_message_20321215.txt --messagefile ./example_config/message1.json"
-
+  "send_message_blast1": "ts-node ./src/index.ts --send --didfile ./example_config/didlist_to_message_20321215.txt --messagefile ./example_config/message1.json",
+  "send_token_message": "ts-node ./src/index.ts --send --didfile ./example_config/didlist.txt --messagefile ./example_config/token_sale_message.json"
  },
  "devDependencies": {
   "@types/commander": "^2.12.2",
@@ -23,9 +23,9 @@
   "typescript": "^5.1.6"
  },
  "dependencies": {
-  "@verida/account-node": "^2.4.0-rc2",
-  "@verida/client-ts": "^2.4.0-rc2",
-  "@verida/vda-did-resolver": "^2.3.9",
+  "@verida/account-node": "^3.0.1",
+  "@verida/client-ts": "^3.0.2",
+  "@verida/vda-did-resolver": "^3.0.1",
   "commander": "^11.0.0",
   "csv-writer": "^1.6.0",
   "dotenv": "^16.3.1",
